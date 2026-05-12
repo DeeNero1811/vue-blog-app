@@ -1,23 +1,23 @@
+import axios from 'axios'
+
 const BASE_URL = 'https://api.oluwasetemi.dev'
 
 export async function fetchPosts() {
-  const res = await fetch(`${BASE_URL}/posts`)
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch posts')
+  try {
+    const res = await axios.get(`${BASE_URL}/posts`)
+    return Array.isArray(res.data) ? res.data : res.data?.data || []
+  } catch (err) {
+    console.error(err)
+    return []
   }
-
-  return res.json()
 }
 
-export async function fetchPost(idOrSlug) {
-  const res = await fetch(`${BASE_URL}/posts/${idOrSlug}`)
-
-  const data = await res.json()
-
-  if (!res.ok) {
-    throw new Error(data?.message || 'Post not found')
+export async function fetchPostById(id) {
+  try {
+    const res = await axios.get(`${BASE_URL}/posts/${id}`)
+    return res.data
+  } catch (err) {
+    console.error(err)
+    return null
   }
-
-  return data
 }

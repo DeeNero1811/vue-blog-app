@@ -5,26 +5,12 @@ const Post = () => import('../views/PostView.vue')
 const NotFound = () => import('../views/NotFoundView.vue')
 
 const routes = [
-  {
-    path: '/',
-    component: Home,
-    meta: { title: 'Home' }
-  },
-  {
-    path: '/post/:id',
-    component: Post,
-    meta: { title: 'Post' }
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    component: NotFound,
-    meta: { title: '404' }
-  }
+  { path: '/', component: Home },
+  { path: '/post/:id', component: Post },
+  { path: '/:pathMatch(.*)*', component: NotFound }
 ]
 
-const router = createRouter({
+export default createRouter({
   history: createWebHistory(),
   routes
 })
-
-export default router
