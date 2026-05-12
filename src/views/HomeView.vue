@@ -51,7 +51,7 @@ function prevPage() {
 <template>
   <div style="padding:20px; max-width:800px; margin:auto;">
 
-    <h1>📝 Blog</h1>
+    <h1>📝 Blog Application </h1>
 
     <input
       v-model="search"
