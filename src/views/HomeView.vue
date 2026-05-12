@@ -54,9 +54,11 @@ const safePosts = computed(() => {
 
 /* 🚀 FILTER */
 const filteredPosts = computed(() => {
-  return safePosts.value
+  const list = Array.isArray(posts.value) ? posts.value : []
+
+  return list
     .filter(post => {
-      const title = post?.title || ''
+      const title = post?.title ?? ''
       return title.toLowerCase().includes(search.value.toLowerCase())
     })
     .filter(post =>
@@ -65,7 +67,6 @@ const filteredPosts = computed(() => {
         : true
     )
 })
-
 /* 🚀 PAGINATION */
 const paginatedPosts = computed(() => {
   const start = (currentPage.value - 1) * perPage
