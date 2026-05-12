@@ -10,72 +10,72 @@ const loading = ref(true)
 const error = ref(null)
 
 const search = ref('')
-const selectedCategory = ref('')
 const currentPage = ref(1)
-
 const perPage = 5
 
-/* 🚀 SAFE LOAD */
+/* -------------------------
+   FETCH POSTS (SAFE)
+--------------------------*/
 onMounted(async () => {
   try {
     const res = await fetchPosts()
 
-    console.log('API RESPONSE:', res)
-
-    let safeData = []
-
+    // ALWAYS FORCE ARRAY
     if (Array.isArray(res)) {
-      safeData = res
+      posts.value = res
     } else if (Array.isArray(res?.data)) {
-      safeData = res.data
+      posts.value = res.data
     } else {
-      safeData = []
+      posts.value = []
     }
 
-    posts.value = safeData
   } catch (err) {
     console.error(err)
-    posts.value = []
     error.value = 'Failed to load posts'
+    posts.value = []
   } finally {
     loading.value = false
   }
 })
 
-/* 🚀 OPEN POST */
+/* -------------------------
+   OPEN POST PAGE
+--------------------------*/
 function openPost(post) {
   router.push(`/post/${post?.slug || post?.id}`)
 }
 
-/* 🚀 EXTRA SAFETY (BLOCK CRASH COMPLETELY) */
+/* -------------------------
+   SAFE LIST (CRASH PROOF)
+--------------------------*/
 const safePosts = computed(() => {
   return Array.isArray(posts.value) ? posts.value : []
 })
 
-/* 🚀 FILTER */
+/* -------------------------
+   SEARCH FILTER
+--------------------------*/
 const filteredPosts = computed(() => {
-  const list = Array.isArray(posts.value) ? posts.value : []
+  const list = safePosts.value
 
-  return list
-    .filter(post => {
-      const title = post?.title ?? ''
-      return title.toLowerCase().includes(search.value.toLowerCase())
-    })
-    .filter(post =>
-      selectedCategory.value
-        ? post?.category === selectedCategory.value
-        : true
-    )
+  return list.filter(post => {
+    const title = post?.title || ''
+    return title.toLowerCase().includes(search.value.toLowerCase())
+  })
 })
-/* 🚀 PAGINATION */
+
+/* -------------------------
+   PAGINATION
+--------------------------*/
 const paginatedPosts = computed(() => {
+  const list = filteredPosts.value
   const start = (currentPage.value - 1) * perPage
-  return filteredPosts.value.slice(start, start + perPage)
+  return list.slice(start, start + perPage)
 })
 
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredPosts.value.length / perPage))
-)
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(filteredPosts.value.length / perPage))
+})
 
 function nextPage() {
   if (currentPage.value < totalPages.value) currentPage.value++
@@ -89,25 +89,17 @@ function prevPage() {
 <template>
   <div style="padding: 20px; max-width: 800px; margin: auto;">
 
-    <h1>📝 Blog</h1>
+    <h1>📝 Blog Posts</h1>
 
+    <!-- SEARCH -->
     <input
       v-model="search"
       placeholder="Search posts..."
-      style="width:100%; padding:10px; margin-bottom:10px;"
+      style="width:100%; padding:10px; margin-bottom:15px;"
     />
 
-    <select v-model="selectedCategory" style="margin-bottom:10px;">
-      <option value="">All</option>
-      <option value="tech">Tech</option>
-      <option value="news">News</option>
-      <option value="life">Life</option>
-    </select>
-
     <!-- LOADING -->
-    <div v-if="loading">
-      <p>Loading...</p>
-    </div>
+    <p v-if="loading">Loading posts...</p>
 
     <!-- ERROR -->
     <p v-else-if="error" style="color:red;">{{ error }}</p>
@@ -120,14 +112,16 @@ function prevPage() {
         @click="openPost(post)"
         style="cursor:pointer; padding:10px; border:1px solid #ddd; margin-bottom:10px;"
       >
-        <h3>{{ post?.title }}</h3>
-        <p>{{ post?.excerpt }}</p>
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.excerpt }}</p>
       </div>
 
       <!-- PAGINATION -->
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
         <button @click="prevPage">Prev</button>
-        <span>{{ currentPage }} / {{ totalPages }}</span>
+
+        <span>Page {{ currentPage }} / {{ totalPages }}</span>
+
         <button @click="nextPage">Next</button>
       </div>
     </div>
